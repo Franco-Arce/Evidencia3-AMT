@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Line } from 'react-chartjs-2'; // Importar el componente de gráfico de líneas
 import './App.css'; // Importamos el archivo de estilos CSS
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const App = () => {
     const [data, setData] = useState([]);
@@ -61,6 +65,20 @@ const App = () => {
         }
     };
 
+    // Preparar datos para el gráfico
+    const chartData = {
+        labels: data.map(item => new Date(item.timestamp).toLocaleString()), // Etiquetas con fechas
+        datasets: [
+            {
+                label: 'Altura del Sensor (cm)',
+                data: data.map(item => item.value), // Valores del sensor
+                borderColor: '#8a2be2', // Color de la línea
+                backgroundColor: 'rgba(138, 43, 226, 0.2)', // Color de fondo
+                fill: true,
+            },
+        ],
+    };
+
     return (
         <div className="container">
             <h1>Datos del Sensor</h1>
@@ -72,6 +90,12 @@ const App = () => {
                 <p>Altura Promedio: {averageHeight.toFixed(2)} cm</p>
                 <p>Cantidad por Encima del Umbral: {totalAboveThreshold}</p>
                 <p>Porcentaje por Encima del Umbral: {percentageAboveThreshold.toFixed(2)}%</p>
+            </div>
+
+            {/* Gráfico de Líneas */}
+            <div className="chart-container">
+                <h2>Gráfico de Alturas del Sensor</h2>
+                <Line data={chartData} />
             </div>
 
             <table className="sensor-table">
