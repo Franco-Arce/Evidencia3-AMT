@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
+import './App.css'; // Importamos el archivo de estilos CSS
 
 const App = () => {
     const [data, setData] = useState([]);
@@ -26,6 +27,22 @@ const App = () => {
         return value >= threshold ? 'Encendido' : 'Apagado';
     };
 
+    // Calcular métricas
+    const calculateMetrics = () => {
+        const totalRecords = data.length;
+        const totalAboveThreshold = data.filter(item => item.value >= threshold).length;
+        const averageHeight = data.reduce((sum, item) => sum + item.value, 0) / totalRecords || 0;
+
+        return {
+            totalRecords,
+            totalAboveThreshold,
+            averageHeight,
+            percentageAboveThreshold: (totalAboveThreshold / totalRecords) * 100 || 0
+        };
+    };
+
+    const { totalRecords, totalAboveThreshold, averageHeight, percentageAboveThreshold } = calculateMetrics();
+
     // Calcular los índices de los registros a mostrar
     const indexOfLastRecord = currentPage * recordsPerPage;
     const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
@@ -47,7 +64,17 @@ const App = () => {
     return (
         <div className="container">
             <h1>Datos del Sensor</h1>
-            <table>
+            
+            {/* Sección de Métricas */}
+            <div className="metrics">
+                <h2>Métricas</h2>
+                <p>Total de Registros: {totalRecords}</p>
+                <p>Altura Promedio: {averageHeight.toFixed(2)} cm</p>
+                <p>Cantidad por Encima del Umbral: {totalAboveThreshold}</p>
+                <p>Porcentaje por Encima del Umbral: {percentageAboveThreshold.toFixed(2)}%</p>
+            </div>
+
+            <table className="sensor-table">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -63,23 +90,14 @@ const App = () => {
                             <td>{item.value}</td>
                             <td>{new Date(item.timestamp).toLocaleString()}</td>
                             <td>
-                                <span style={{
-                                    display: 'inline-block',
-                                    width: '25px',
-                                    height: '25px',
-                                    backgroundColor: item.value >= threshold ? 'green' : 'red',
-                                    border: '3px solid white',
-                                    borderRadius: '50%',
-                                    marginRight: '10px', // Añade espacio entre el círculo y el texto
-                                    transition: 'background-color 0.3s'
-                                }}></span>
+                                <span className={`led-circle ${item.value >= threshold ? 'on' : 'off'}`}></span>
                                 {getLedStatus(item.value)}
                             </td>
                         </tr>
                     ))}
                 </tbody>
             </table>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+            <div className="pagination">
                 <button onClick={handlePreviousPage} disabled={currentPage === 1}>Anterior</button>
                 <button onClick={handleNextPage} disabled={currentPage === totalPages}>Siguiente</button>
             </div>
